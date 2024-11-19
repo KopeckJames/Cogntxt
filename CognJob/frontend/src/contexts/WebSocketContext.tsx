@@ -24,38 +24,40 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
     if (!user) return;
 
     const connect = () => {
-      // In production, use secure WebSocket (wss://) and proper URL
-      const wsUrl = `${import.meta.env.VITE_WS_URL || 'ws://localhost:8000'}/ws`;
-      ws.current = new WebSocket(wsUrl);
+      try {
+        ws.current = new WebSocket('ws://localhost:8000/ws');
 
-      ws.current.onopen = () => {
-        setIsConnected(true);
-        setError(null);
-      };
+        ws.current.onopen = () => {
+          setIsConnected(true);
+          setError(null);
+        };
 
-      ws.current.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === 'transcript') {
-            setTranscript(data.content);
-          } else if (data.type === 'ai_response') {
-            setAiResponse(data.content);
+        ws.current.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'transcript') {
+              setTranscript(data.content);
+            } else if (data.type === 'ai_response') {
+              setAiResponse(data.content);
+            }
+          } catch (err) {
+            console.error('Failed to parse WebSocket message:', err);
           }
-        } catch (err) {
-          console.error('Failed to parse WebSocket message:', err);
-        }
-      };
+        };
 
-      ws.current.onerror = () => {
-        setError('WebSocket connection failed');
-        setIsConnected(false);
-      };
+        ws.current.onerror = () => {
+          setError('WebSocket connection failed');
+          setIsConnected(false);
+        };
 
-      ws.current.onclose = () => {
+        ws.current.onclose = () => {
+          setIsConnected(false);
+          setTimeout(connect, 3000);
+        };
+      } catch (err) {
+        setError('Failed to connect to WebSocket server');
         setIsConnected(false);
-        // Attempt to reconnect after 3 seconds
-        setTimeout(connect, 3000);
-      };
+      }
     };
 
     connect();

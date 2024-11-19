@@ -1,42 +1,37 @@
 // src/hooks/useAudioRecording.ts
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useWebSocket } from '@/contexts/WebSocketContext';
 
-interface AudioRecordingState {
+interface AudioRecordingHook {
   isRecording: boolean;
+  startRecording: () => Promise<void>;
+  stopRecording: () => void;
   audioLevel: number;
   error: string | null;
 }
 
-interface AudioRecordingHook extends AudioRecordingState {
-  startRecording: () => Promise<void>;
-  stopRecording: () => void;
-}
-
 export const useAudioRecording = (): AudioRecordingHook => {
-  const [state, setState] = useState<AudioRecordingState>({
-    isRecording: false,
-    audioLevel: 0,
-    error: null,
-  });
-
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioLevel, setAudioLevel] = useState(0);
+  const [error, setError] = useState<string | null>(null);
   const { sendAudioData } = useWebSocket();
+  
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const audioContext = useRef<AudioContext | null>(null);
   const analyser = useRef<AnalyserNode | null>(null);
   const animationFrame = useRef<number>();
 
   const updateAudioLevel = useCallback(() => {
-    if (analyser.current && state.isRecording) {
+    if (analyser.current && isRecording) {
       const dataArray = new Uint8Array(analyser.current.frequencyBinCount);
       analyser.current.getByteFrequencyData(dataArray);
       
       const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
-      setState(prev => ({ ...prev, audioLevel: average / 255 }));
+      setAudioLevel(average / 255);
       
       animationFrame.current = requestAnimationFrame(updateAudioLevel);
     }
-  }, [state.isRecording]);
+  }, [isRecording]);
 
   const startRecording = async () => {
     try {
@@ -66,21 +61,19 @@ export const useAudioRecording = (): AudioRecordingHook => {
         }
       };
 
-      mediaRecorder.current.start(250); // Send chunks every 250ms
-      setState(prev => ({ ...prev, isRecording: true, error: null }));
+      mediaRecorder.current.start(250);
+      setIsRecording(true);
+      setError(null);
       updateAudioLevel();
       
     } catch (err) {
-      setState(prev => ({
-        ...prev,
-        error: 'Failed to start recording. Please check your microphone permissions.'
-      }));
+      setError('Failed to start recording. Please check your microphone permissions.');
       console.error('Recording error:', err);
     }
   };
 
   const stopRecording = useCallback(() => {
-    if (mediaRecorder.current && state.isRecording) {
+    if (mediaRecorder.current && isRecording) {
       mediaRecorder.current.stop();
       mediaRecorder.current.stream.getTracks().forEach(track => track.stop());
 
@@ -92,22 +85,15 @@ export const useAudioRecording = (): AudioRecordingHook => {
         cancelAnimationFrame(animationFrame.current);
       }
 
-      setState(prev => ({
-        ...prev,
-        isRecording: false,
-        audioLevel: 0
-      }));
+      setIsRecording(false);
+      setAudioLevel(0);
     }
-  }, [state.isRecording]);
-
-  useEffect(() => {
-    return () => {
-      stopRecording();
-    };
-  }, [stopRecording]);
+  }, [isRecording]);
 
   return {
-    ...state,
+    isRecording,
+    audioLevel,
+    error,
     startRecording,
     stopRecording,
   };

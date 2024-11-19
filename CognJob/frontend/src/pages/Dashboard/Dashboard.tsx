@@ -6,15 +6,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWebSocket } from '@/contexts/WebSocketContext';
 import { useAudioRecording } from '@/hooks/useAudioRecording';
-import { 
-  Mic, 
-  Pause, 
-  Volume2, 
-  Waveform, 
-  Settings, 
-  Clock,
-  BarChart
-} from 'lucide-react';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -72,7 +63,7 @@ export default function Dashboard() {
           </span>
           
           <Button variant="outline" size="icon">
-            <Settings className="h-5 w-5" />
+            {/* <Settings className="h-5 w-5" /> */}
           </Button>
         </div>
       </div>
@@ -81,32 +72,28 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Recording Time
-            </CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Recording Time</CardTitle>
+            {/* <Clock className="h-4 w-4 text-muted-foreground" /> */}
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">00:00:00</div>
           </CardContent>
         </Card>
+        
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Audio Level
-            </CardTitle>
-            <Volume2 className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Audio Level</CardTitle>
+            {/* <Volume2 className="h-4 w-4 text-muted-foreground" /> */}
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{Math.round(audioLevel * 100)}%</div>
           </CardContent>
         </Card>
+        
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Words Processed
-            </CardTitle>
-            <BarChart className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Words Processed</CardTitle>
+            {/* <BarChart className="h-4 w-4 text-muted-foreground" /> */}
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{transcript?.split(' ').length || 0}</div>
@@ -114,14 +101,12 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* Error Alert */}
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
-      {/* Main Content */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Transcription Card */}
         <Card>
@@ -135,16 +120,14 @@ export default function Dashboard() {
                     <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
                   </span>
                 )}
-                <Volume2 
+                {/* <Volume2 
                   className={`h-5 w-5 transition-colors ${
                     isRecording ? 'text-primary' : 'text-muted-foreground'
                   }`} 
-                />
+                /> */}
               </div>
             </CardTitle>
-            <CardDescription>
-              Real-time speech to text transcription
-            </CardDescription>
+            <CardDescription>Real-time speech to text transcription</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -155,7 +138,6 @@ export default function Dashboard() {
                 {transcript || 'Your transcription will appear here...'}
               </div>
 
-              {/* Audio Level Visualization */}
               {isRecording && (
                 <div className="h-12 border rounded-lg p-4 flex items-center justify-center">
                   <div className="flex items-center gap-1">
@@ -181,12 +163,12 @@ export default function Dashboard() {
               >
                 {isRecording ? (
                   <>
-                    <Pause className="w-4 h-4 mr-2" />
+                    {/* <Pause className="w-4 h-4 mr-2" /> */}
                     Stop Recording
                   </>
                 ) : (
                   <>
-                    <Mic className="w-4 h-4 mr-2" />
+                    {/* <Mic className="w-4 h-4 mr-2" /> */}
                     Start Recording
                   </>
                 )}
@@ -199,9 +181,7 @@ export default function Dashboard() {
         <Card>
           <CardHeader>
             <CardTitle>AI Response</CardTitle>
-            <CardDescription>
-              Real-time AI generated responses
-            </CardDescription>
+            <CardDescription>Real-time AI generated responses</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[300px] border rounded-lg p-4 overflow-y-auto bg-muted/50">
@@ -210,7 +190,7 @@ export default function Dashboard() {
             
             {isRecording && (
               <div className="mt-4 p-4 rounded-lg bg-primary/10 flex items-center gap-2">
-                <Waveform className="h-4 w-4 text-primary animate-pulse" />
+                {/* <Speaker className="h-4 w-4 text-primary animate-pulse" /> */}
                 <span className="text-primary">AI is listening and processing...</span>
               </div>
             )}
