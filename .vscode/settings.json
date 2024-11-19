@@ -1,0 +1,5 @@
+{
+    "python.analysis.extraPaths": [
+        "./filestouse/custom_speech_recognition/recognizers"
+    ]
+}
