@@ -20,7 +20,7 @@ export const useAudioRecording = (): AudioRecordingHook => {
     error: null,
   });
 
-  const { sendAudioChunk } = useWebSocket();
+  const { sendAudioData } = useWebSocket();
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const audioContext = useRef<AudioContext | null>(null);
   const analyser = useRef<AnalyserNode | null>(null);
@@ -48,28 +48,24 @@ export const useAudioRecording = (): AudioRecordingHook => {
         } 
       });
 
-      // Setup AudioContext
       audioContext.current = new AudioContext();
       analyser.current = audioContext.current.createAnalyser();
       const source = audioContext.current.createMediaStreamSource(stream);
       source.connect(analyser.current);
 
-      // Configure analyzer
       analyser.current.fftSize = 256;
       analyser.current.smoothingTimeConstant = 0.8;
 
-      // Setup MediaRecorder with optimized settings
       mediaRecorder.current = new MediaRecorder(stream, {
         mimeType: 'audio/webm;codecs=opus'
       });
 
       mediaRecorder.current.ondataavailable = async (event) => {
         if (event.data.size > 0) {
-          sendAudioChunk(event.data);
+          sendAudioData(event.data);
         }
       };
 
-      // Start recording
       mediaRecorder.current.start(250); // Send chunks every 250ms
       setState(prev => ({ ...prev, isRecording: true, error: null }));
       updateAudioLevel();

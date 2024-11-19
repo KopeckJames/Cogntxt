@@ -3,12 +3,18 @@ import { Button } from "@/components/ui/button"
 import { useTheme } from "@/components/ui/theme-provider"
 import { useAuth } from "@/contexts/AuthContext"
 import { Moon, Sun } from "lucide-react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 
 export function Header() {
   const { theme, setTheme } = useTheme()
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  // Don't show header on auth pages
+  if (['/login', '/register'].includes(location.pathname)) {
+    return null;
+  }
 
   return (
     <header className="border-b">
@@ -36,6 +42,12 @@ export function Header() {
 
             {user ? (
               <div className="flex items-center gap-4">
+                <Button
+                  variant="ghost"
+                  onClick={() => navigate('/dashboard')}
+                >
+                  Dashboard
+                </Button>
                 <span className="text-sm text-muted-foreground">
                   {user.email}
                 </span>

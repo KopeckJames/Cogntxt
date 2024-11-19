@@ -6,9 +6,17 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWebSocket } from '@/contexts/WebSocketContext';
 import { useAudioRecording } from '@/hooks/useAudioRecording';
-import { Mic, Pause, Waveform, Settings, Volume2 } from 'lucide-react';
+import { 
+  Mic, 
+  Pause, 
+  Volume2, 
+  Waveform, 
+  Settings, 
+  Clock,
+  BarChart
+} from 'lucide-react';
 
-const Dashboard = () => {
+export default function Dashboard() {
   const { user } = useAuth();
   const { transcript, aiResponse, isConnected, error: wsError } = useWebSocket();
   const { 
@@ -38,26 +46,82 @@ const Dashboard = () => {
   const error = wsError || recordingError;
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-6">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold">Dashboard</h1>
           <p className="text-muted-foreground mt-1">
-            {isConnected ? 'Connected and ready' : 'Connecting...'}
+            Welcome back, {user?.name || user?.email}
           </p>
         </div>
         
-        <Button variant="outline" size="icon">
-          <Settings className="h-5 w-5" />
-        </Button>
+        <div className="flex items-center gap-4">
+          <span className={`flex items-center gap-2 ${
+            isConnected ? 'text-green-500' : 'text-yellow-500'
+          }`}>
+            <span className="relative flex h-3 w-3">
+              <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                isConnected ? 'animate-ping bg-green-500' : 'bg-yellow-500'
+              }`}></span>
+              <span className={`relative inline-flex rounded-full h-3 w-3 ${
+                isConnected ? 'bg-green-500' : 'bg-yellow-500'
+              }`}></span>
+            </span>
+            {isConnected ? 'Connected' : 'Connecting...'}
+          </span>
+          
+          <Button variant="outline" size="icon">
+            <Settings className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
 
+      {/* Stats Section */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Recording Time
+            </CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">00:00:00</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Audio Level
+            </CardTitle>
+            <Volume2 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{Math.round(audioLevel * 100)}%</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Words Processed
+            </CardTitle>
+            <BarChart className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{transcript?.split(' ').length || 0}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Error Alert */}
       {error && (
-        <Alert variant="destructive" className="mb-6">
+        <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
+      {/* Main Content */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Transcription Card */}
         <Card>
@@ -155,6 +219,4 @@ const Dashboard = () => {
       </div>
     </div>
   );
-};
-
-export default Dashboard;
+}

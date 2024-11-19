@@ -3,7 +3,7 @@ import { createContext, useContext, useRef, useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
 
 interface WebSocketContextType {
-  sendAudioChunk: (audioChunk: Blob) => void;
+  sendAudioData: (audioChunk: Blob) => void;
   transcript: string;
   aiResponse: string;
   isConnected: boolean;
@@ -12,20 +12,21 @@ interface WebSocketContextType {
 
 const WebSocketContext = createContext<WebSocketContextType | null>(null);
 
-export const WebSocketProvider = ({ children }: { children: React.ReactNode }) => {
-  const ws = useRef<WebSocket | null>(null);
+export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   const [isConnected, setIsConnected] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [aiResponse, setAiResponse] = useState('');
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
+  const ws = useRef<WebSocket | null>(null);
 
   useEffect(() => {
     if (!user) return;
 
     const connect = () => {
-      const websocketUrl = `${import.meta.env.VITE_WS_URL}/transcribe`;
-      ws.current = new WebSocket(websocketUrl);
+      // In production, use secure WebSocket (wss://) and proper URL
+      const wsUrl = `${import.meta.env.VITE_WS_URL || 'ws://localhost:8000'}/ws`;
+      ws.current = new WebSocket(wsUrl);
 
       ws.current.onopen = () => {
         setIsConnected(true);
@@ -66,7 +67,7 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
     };
   }, [user]);
 
-  const sendAudioChunk = (audioChunk: Blob) => {
+  const sendAudioData = (audioChunk: Blob) => {
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
       setError('WebSocket not connected');
       return;
@@ -78,7 +79,7 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
   return (
     <WebSocketContext.Provider
       value={{
-        sendAudioChunk,
+        sendAudioData,
         transcript,
         aiResponse,
         isConnected,
@@ -88,7 +89,7 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
       {children}
     </WebSocketContext.Provider>
   );
-};
+}
 
 export const useWebSocket = () => {
   const context = useContext(WebSocketContext);

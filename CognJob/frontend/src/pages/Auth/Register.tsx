@@ -1,11 +1,11 @@
 // src/pages/Auth/Register.tsx
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 
 export default function Register() {
@@ -14,8 +14,7 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [validationError, setValidationError] = useState<string | null>(null);
-  const { register, error, loading } = useAuth();
-  const navigate = useNavigate();
+  const { register, loading, error } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +33,7 @@ export default function Register() {
     try {
       await register(email, password, name);
     } catch (err) {
-      // Error is handled by auth context
+      // Error handled by auth context
     }
   };
 
@@ -44,11 +43,9 @@ export default function Register() {
     <div className="flex items-center justify-center min-h-[80vh] px-4">
       <Card className="w-full max-w-md">
         <form onSubmit={handleSubmit}>
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
-            <CardDescription>
-              Enter your details to create your account
-            </CardDescription>
+          <CardHeader>
+            <CardTitle>Create an account</CardTitle>
+            <CardDescription>Enter your details to get started</CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-4">
@@ -59,11 +56,9 @@ export default function Register() {
             )}
 
             <div className="space-y-2">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Name
-              </label>
+              <label htmlFor="name">Name</label>
               <Input
-                placeholder="John Doe"
+                id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 disabled={loading}
@@ -71,12 +66,10 @@ export default function Register() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Email
-              </label>
+              <label htmlFor="email">Email</label>
               <Input
+                id="email"
                 type="email"
-                placeholder="m@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
@@ -85,10 +78,9 @@ export default function Register() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Password
-              </label>
+              <label htmlFor="password">Password</label>
               <Input
+                id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -98,10 +90,9 @@ export default function Register() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Confirm Password
-              </label>
+              <label htmlFor="confirmPassword">Confirm Password</label>
               <Input
+                id="confirmPassword"
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -121,12 +112,9 @@ export default function Register() {
               Create account
             </Button>
 
-            <p className="text-sm text-muted-foreground text-center">
+            <p className="text-sm text-center text-muted-foreground">
               Already have an account?{' '}
-              <Link 
-                to="/login" 
-                className="text-primary underline-offset-4 hover:underline"
-              >
+              <Link to="/login" className="text-primary hover:underline">
                 Sign in
               </Link>
             </p>
