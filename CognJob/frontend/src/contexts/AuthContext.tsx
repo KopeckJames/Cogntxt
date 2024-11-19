@@ -21,43 +21,27 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        // In a real app, verify the token with your backend
-        // For now, we'll simulate a user session
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
-        }
-      } catch (err) {
-        console.error('Auth check failed:', err);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      }
+    // Check if user is already logged in
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
     }
     setLoading(false);
-  };
+  }, []);
 
   const login = async (email: string, password: string) => {
-    setLoading(true);
-    setError(null);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // For demo purposes, any email/password combination works
+      setLoading(true);
+      setError(null);
+
+      // For demo purposes - in a real app this would be an API call
       const mockUser: User = {
         id: '1',
         email,
@@ -65,12 +49,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         subscriptionTier: 'free'
       };
 
-      localStorage.setItem('token', 'mock-token');
       localStorage.setItem('user', JSON.stringify(mockUser));
       setUser(mockUser);
       navigate('/dashboard');
     } catch (err) {
-      setError('Invalid credentials');
+      setError(err instanceof Error ? err.message : 'Failed to login');
       throw err;
     } finally {
       setLoading(false);
@@ -78,12 +61,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const register = async (email: string, password: string, name?: string) => {
-    setLoading(true);
-    setError(null);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      setLoading(true);
+      setError(null);
+
+      // For demo purposes - in a real app this would be an API call
       const mockUser: User = {
         id: '1',
         email,
@@ -91,12 +73,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         subscriptionTier: 'free'
       };
 
-      localStorage.setItem('token', 'mock-token');
       localStorage.setItem('user', JSON.stringify(mockUser));
       setUser(mockUser);
       navigate('/dashboard');
     } catch (err) {
-      setError('Registration failed');
+      setError(err instanceof Error ? err.message : 'Failed to register');
       throw err;
     } finally {
       setLoading(false);
@@ -104,7 +85,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
     navigate('/login');
@@ -127,7 +107,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       {children}
     </AuthContext.Provider>
   );
-};
+}
 
 export const useAuth = () => {
   const context = useContext(AuthContext);

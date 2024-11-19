@@ -1,11 +1,13 @@
 // src/components/layout/Header.tsx
 import { Button } from "@/components/ui/button"
 import { useTheme } from "@/components/ui/theme-provider"
+import { useAuth } from "@/contexts/AuthContext"
 import { Moon, Sun } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
 export function Header() {
   const { theme, setTheme } = useTheme()
+  const { user, logout } = useAuth()
   const navigate = useNavigate()
 
   return (
@@ -31,10 +33,32 @@ export function Header() {
                 <Sun className="h-5 w-5" />
               )}
             </Button>
-            <Button onClick={() => navigate('/login')}>Sign In</Button>
-            <Button onClick={() => navigate('/register')} variant="outline">
-              Register
-            </Button>
+
+            {user ? (
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-muted-foreground">
+                  {user.email}
+                </span>
+                <Button 
+                  variant="outline"
+                  onClick={logout}
+                >
+                  Logout
+                </Button>
+              </div>
+            ) : (
+              <>
+                <Button 
+                  variant="ghost"
+                  onClick={() => navigate('/login')}
+                >
+                  Sign In
+                </Button>
+                <Button onClick={() => navigate('/register')}>
+                  Get Started
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
