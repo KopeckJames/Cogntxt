@@ -10,3 +10,4 @@ psycopg2-binary
 websockets
 openai
 python-dotenv
+whisper

@@ -9,12 +9,14 @@ import json
 from datetime import datetime, timedelta
 
 from app.core.config import Settings
-from app.api.deps import get_db, get_current_user
 from app.services.audio_processor import AudioProcessor
 from app.services.gpt_processor import GPTProcessor
 from app.services.websocket_manager import ConnectionManager
 from app.schemas.user import User, UserCreate, UserInDB
 from app.schemas.conversation import Conversation, ConversationCreate
+from app.db.session import SessionLocal
+from app.models.user import User as UserModel
+from app.core.security import verify_password
 
 settings = Settings()
 app = FastAPI(title="CognJob API")
@@ -34,15 +36,41 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # Initialize connection manager
 manager = ConnectionManager()
 
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+async def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)) -> UserModel:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    user = await UserModel.get_by_token(db, token)
+    if user is None:
+        raise credentials_exception
+    return user
+
+async def authenticate_user(db: Session, username: str, password: str) -> UserModel:
+    user = await UserModel.get_by_username(db, username)
+    if not user:
+        return None
+    if not verify_password(password, user.hashed_password):
+        return None
+    return user
+
 @app.post("/api/users/", response_model=User)
 async def create_user(user: UserCreate, db: Session = Depends(get_db)):
-    db_user = await User.get_by_email(db, email=user.email)
+    db_user = await UserModel.get_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(
             status_code=400,
             detail="Email already registered"
         )
-    return await User.create(db=db, user=user)
+    return await UserModel.create(db=db, user=user)
 
 @app.post("/api/token")
 async def login_for_access_token(
@@ -133,4 +161,4 @@ async def get_conversations(
     return conversations
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
